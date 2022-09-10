@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react"
 import style from "./index.module.scss"
 import cn from "classnames"
-import { TemplatePage, HeadingStrong, Checkbox, Icon, Text, Search, CardGallery, Unauthorized, ButtonArrow } from "@components"
+import { TemplatePage, HeadingStrong, Checkbox, Icon, Text, Search, CardGallery, Unauthorized, ButtonArrow, EmptyContent } from "@components"
 import { useScrollDirection } from "../../../src/hooks/useScrollDirection"
 import { makeCaseAndAccentInsensitiveString, windowIsNotReady, getDate, axiosInstance } from "../../../src/utility"
 import { Work, scrollDirType } from "../../../src/types"
 import { isLoggedIn } from "axios-jwt"
+import workImage from '../../../src/assets/images/landing-1.png'
 
 
 type sortDateType = "asc" | "dsc"
@@ -16,86 +17,6 @@ interface Filters {
     exhibitions: boolean
 }
 
-
-const data: Work[] = [
-    {
-        "id": "1",
-        "title": "",
-        "description": "Une description",
-        "createdAt": "2022-06-27T23:09:10.693Z",
-        "mainFile": {
-            id: "",
-            fileUrl: ""
-        },
-        "workFiles": [
-            {
-                id: "",
-                fileUrl: ""
-            },
-            {
-                id: "",
-                fileUrl: ""
-            }
-        ],
-        "exhibitions": [
-            {
-                "id": "1",
-            },
-        ]
-    },
-    {
-        "id": "2",
-        "title": "Un titre",
-        "description": "Une description",
-        "createdAt": "2022-06-27T23:09:10.693Z",
-        "mainFile": {
-            id: "",
-            fileUrl: ""
-        },
-        "workFiles": [
-            {
-                id: "",
-                fileUrl: ""
-            },
-            {
-                id: "",
-                fileUrl: ""
-            }
-        ],
-    },
-    {
-        "id": "3",
-        "title": "A title",
-        "description": "Une description",
-        "createdAt": "2022-06-27T23:09:10.693Z",
-        "mainFile": {
-            id: "",
-            fileUrl: ""
-        },
-        "workFiles": [
-            {
-                id: "",
-                fileUrl: ""
-            },
-            {
-                id: "",
-                fileUrl: ""
-            }
-        ],
-        "exhibitions": [
-            {
-                "id": "1",
-                
-            },
-            {
-                "id": "2",
-            },
-            {
-                "id": "3",
-            },
-        ]
-    },
-]
 
 const Works: React.FC = () => {
 
@@ -198,9 +119,9 @@ const Works: React.FC = () => {
     const getAllWorks = () => {
         return axiosInstance.get('/works')
           .then(response => {
-            console.log(response);
-            
+            if(response.status === 200) {
             return setWorks(response.data);
+            }
           }).catch((error) => {
             return error
           })
@@ -222,7 +143,7 @@ const Works: React.FC = () => {
             {isLoggedIn() ?
                 <>
                     <span className={style.backLink}>
-                        <ButtonArrow label="Retour à l'accueil" side="left" to="/dashboard"/>
+                        <ButtonArrow label="Retour à l'accueil" side="left" to="/artist/dashboard"/>
                     </span>
                     <section className={cn(style.headSection, direction === scrollDirType.down ? style.scrollDown : null)}>
                         <HeadingStrong content="Mes oeuvres" elementColor="pink" size="xl" />
@@ -249,18 +170,19 @@ const Works: React.FC = () => {
                             />
                         </aside>
                     </section>
+                    {works && works.length > 0 ?
                     <section className={style.bodySection}>
                         <div className={style.body__ctn}>
                             {
                                 filterWorksList(works, filters).map((work, index) => (
-                                    (index % 3) === 0 && <CardGallery key={work.id} id={work.id} title={work.title} createdAt={work.createdAt} date_end={""} date_start={""} type={"work"}/>
+                                    (index % 3) === 0 && <CardGallery key={work.id} id={work.id} title={work.title} createdAt={work.createdAt} img={work.mainFile ? work.mainFile.fileUrl : workImage.src} type={"work"} date_end={""} date_start={""}/>
                                 ))
                             }
                         </div>
                         <div className={style.body__ctn}>
                             {
                                 filterWorksList(works, filters).map((work, index) => (
-                                    (index % 3) === 1 && <CardGallery key={work.id} id={work.id} title={work.title} createdAt={work.createdAt} date_end={""} date_start={""} type={"work"}/>
+                                    (index % 3) === 1 && <CardGallery key={work.id} id={work.id} title={work.title} createdAt={work.createdAt} img={work.mainFile ? work.mainFile.fileUrl : workImage.src} type={"work"} date_end={""} date_start={""}/>
                                 ))
                             }
                         </div>
@@ -268,11 +190,15 @@ const Works: React.FC = () => {
                             {
                                 filterWorksList(works, filters).map((work, index) => (
                                     
-                                    (index % 3) === 2 && <CardGallery key={work.id} id={work.id} title={work.title} createdAt={work.createdAt} date_end={""} date_start={""} type={"work"}/>
+                                    (index % 3) === 2 && <CardGallery key={work.id} id={work.id} title={work.title} createdAt={work.createdAt} img={work.mainFile ? work.mainFile.fileUrl : workImage.src} type={"work"} date_end={""} date_start={""}/>
                                 ))
                             }
                         </div>
                     </section>
+                    :
+
+                    <EmptyContent entity="works" labelButton="Créer une oeuvre" to="/artist/create-work"/>
+                    }
                 </>
                 :
                 <Unauthorized />

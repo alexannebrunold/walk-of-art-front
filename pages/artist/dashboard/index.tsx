@@ -20,7 +20,7 @@ const rawData: Exhibition[] = [
         "title": "titre oeuvre",
         "mainFile": {
           "id": "234",
-          "fileUrl": "https://iili.io/5zikPt.jpg"
+          "fileUrl": ""
         }
       },
       "board": {
@@ -108,7 +108,7 @@ const rawData: Exhibition[] = [
         "title": "titre oeuvre",
         "mainFile": {
           "id": "234",
-          "fileUrl": "https://iili.io/5zikPt.jpg"
+          "fileUrl": ""
         }
       },
       "board": {
@@ -151,7 +151,7 @@ const rawData: Exhibition[] = [
         "title": "titre oeuvre",
         "mainFile": {
           "id": "234",
-          "fileUrl": "https://iili.io/5zikPt.jpg"
+          "fileUrl": ""
         }
       },
       "board": {
@@ -346,8 +346,8 @@ const Dashboard: React.FC = () => {
             'completed': [] as any[]
         }
         rawData.forEach((el: any) => {
-            let a = {}
-            a = {
+            let exhibition = {}
+            exhibition = {
                 id: el.id
             } as Exhibition
 
@@ -370,7 +370,7 @@ const Dashboard: React.FC = () => {
             {isLoggedIn() ? 
                 <>
                     <div className={s.title}>
-                        <Text tag="h1" typo="heading-xl">Bonjour Michael</Text>
+                        <Text tag="h1" typo="heading-xl">Bonjour</Text>
                     </div>
                     <div className={s.subtitle}>
                         <Text tag="h2" typo="heading-lg">Expositions</Text>

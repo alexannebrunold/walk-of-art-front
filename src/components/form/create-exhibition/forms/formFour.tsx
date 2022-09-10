@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./formFour.module.scss";
 import { Button, ExpositionBoard, Tooltip } from "@components";
 import cardImg from "../../../../assets/images/cardImg.png"
 import { useForm } from "react-hook-form";
-import { axiosInstance } from "@utility/index";
+import { axiosInstance, getDateWithoutHours } from "@utility/index";
 
 const toolTipText = "Veuillez vérifier miniteusement les informations concernant votre exposition car aucune modification ne sera possible par la suite."
 
@@ -22,7 +22,7 @@ export interface IRecapProps {
 
 
 export const FormFour: React.FC<IProps> = ({ handleBack, handleStepSubmit, defaultValues = {}, formState }: IProps) => {
-  const [orientation, setOrientation] = useState<string>('landscape')
+  const [orientation, setOrientation] = useState<string>('portrait')
 
   const {
     handleSubmit,
@@ -33,16 +33,22 @@ export const FormFour: React.FC<IProps> = ({ handleBack, handleStepSubmit, defau
     event.preventDefault();
 
     handleSubmit(() => {
-      getAllAvailableGalleries(formState);
+      createExhibition(formState);
     })(event);
   };
 
+  const setWorkOrientationFromForm = () => {
+    setOrientation(formState.orientation)
+  }
 
-  const getAllAvailableGalleries = (formState) => {
-    console.log(formState);
+  useEffect(() => {
+    setWorkOrientationFromForm()
+  })
+
+  const createExhibition = (formState) => {
     
-    const body = {
-      "title": formState.title,
+    const expectedBodyForExhibition = {
+      "title": formState.expositionTitle,
       "description": formState.description,
       "dateStart": formState.startExpositionDate,
       "dateEnd": formState.endExpositionDate,
@@ -55,24 +61,17 @@ export const FormFour: React.FC<IProps> = ({ handleBack, handleStepSubmit, defau
         },
         {
           "name": "tipeee",
-          "url": formState.personnalWebite
+          "url": formState.personnalWebsite
         }
       ],
-      "orientation": formState.orientation,
-      "gallery": formState.parentName
+      "orientation": formState.workOrientation,
+      "gallery": formState.galleryId
     }
 
-    console.log(body);
-    
-
-    return axiosInstance.post('/exhibitions', body)
+    return axiosInstance.post('/exhibitions', expectedBodyForExhibition)
       .then(response => {
-        console.log(response);
-        
         return response.data
       }).catch((error) => {
-        console.log(error);
-        
         return error
       })
   }
@@ -93,21 +92,15 @@ export const FormFour: React.FC<IProps> = ({ handleBack, handleStepSubmit, defau
           <ul className={styles.list}>
             <li>
               <strong className={styles.bold}>
-                Votre profil facebook :
+                Votre profil facebook : 
               </strong>
-              {formState.facebook}
+              {formState.facebookUrl}
             </li>
             <li>
               <strong className={styles.bold}>
-                Votre site personnel :
+                Votre site personnel : 
               </strong>
-              {formState.personnalWebite}
-            </li>
-            <li>
-              <strong className={styles.bold}>Votre portfolio :</strong>https://facebook.com/mon-profil
-            </li>
-            <li>
-              <strong className={styles.bold}>Votre boutique en ligne :</strong> https://facebook.com/mon-profil
+              {formState.personnalWebsiteUrl}
             </li>
           </ul>
 
@@ -117,15 +110,16 @@ export const FormFour: React.FC<IProps> = ({ handleBack, handleStepSubmit, defau
             dans la gallerie n°<strong className={styles.bold}>NUMBER</strong>
             située à <strong className={styles.bold}>ADRESSE</strong>
           </p> */}
+
           <p className={styles.marginTop16}>
             Votre exposition aura lieu du
-            <strong className={styles.bold}> {formState.startExpositionDate}</strong>
-            au <strong className={styles.bold}> {formState.endExpositionDate}</strong>
+            <strong className={styles.bold}> {getDateWithoutHours(formState.startExpositionDate)} </strong>
+            au <strong className={styles.bold}> {getDateWithoutHours(formState.endExpositionDate)}</strong>
           </p>
 
           <div className={styles.ctaContainer}>
             <Button label={"Étape précédente"} color="black" bg="light" type="submit" onClick={handleBack} />
-            <Button label={"Valider"} color="white" bg="dark" type="submit" />
+            <Button label={"Passer au paiement"} color="white" bg="dark" type="submit" />
           </div>
         </div>
 
@@ -133,7 +127,3 @@ export const FormFour: React.FC<IProps> = ({ handleBack, handleStepSubmit, defau
     </>
   )
 }
-function handleStepSubmit(formattedData: any) {
-  throw new Error("Function not implemented.");
-}
-

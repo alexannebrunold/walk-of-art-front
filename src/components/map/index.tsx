@@ -9,6 +9,7 @@ import styles from "./index.module.scss"
 import "mapbox-gl/dist/mapbox-gl.css"
 
 const INITIAL_STATE = {
+  id: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   longitude: -2.3522219,
   latitude: 48.856614,
   zoom: 3.5,
@@ -32,42 +33,19 @@ interface IProps {
   required?: boolean
   galleries: IGalleryMap[]
   initialViewport?: IInitialVP,
-  updateName: (arg: string) => void
+  setGalleryId: (arg: string) => void
 }
 
 const accessToken =
   "pk.eyJ1IjoicXVlbnRpbmdyY2hyIiwiYSI6ImNsNTZyanNzcjA4dDIzZG5zbHV1MDA1bHQifQ.TlP4iPDrNLXYKTYIZVEOPg"
 
-// const dummyData: IGalleryMap[] = [
-//   {
-//     id: "1",
-//     lat: 48.852614,
-//     lng: 2.3522219,
-//     price: 100,
-//     name: "Paris",
-//   },
-//   {
-//     id: "2",
-//     lat: 48.856614,
-//     lng: 2.3521219,
-//     price: 90,
-//     name: "Paris",
-//   },
-//   {
-//     id: "3",
-//     lat: 48.956614,
-//     lng: 2.3622219,
-//     price: 110,
-//     name: "Paris",
-//   },
-// ]
 
 export const Map: React.FC<IProps> = ({
   name = "board_id",
   galleries,
   initialViewport = INITIAL_STATE,
   required = false,
-  updateName
+  setGalleryId
 }: IProps) => {
   const mapRef = useRef(null)
   const [viewport, setViewport] = useState(initialViewport)
@@ -99,7 +77,7 @@ export const Map: React.FC<IProps> = ({
             <Marker longitude={item.longitude} latitude={item.latitude} anchor="bottom">
               <div
                 className={styles.marker}
-                onClick={() => updateName(item.id)}
+                onClick={() => setGalleryId(item.id)}
               >
                 <p>{item.price} € / j</p>
               </div>

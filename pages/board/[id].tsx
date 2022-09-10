@@ -34,9 +34,9 @@ const data = {
     name: 'Fabien Deneau',
     mainImage: 'https://iili.io/FhDd9R.jpg',
     images: [
-        'https://iili.io/A7NDAP.jpg',
-        'https://iili.io/dwagF2.png',
-        'https://iili.io/hy8bLv.jpg'
+        '../src/assets/images/landing-1.png',
+        '../src/assets/images/landing-2.png',
+        '../src/assets/images/landing-3.png'
     ],
     reactions: [
         {
