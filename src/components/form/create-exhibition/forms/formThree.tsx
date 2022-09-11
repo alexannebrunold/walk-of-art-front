@@ -11,6 +11,7 @@ export interface IProps {
   handleBack: () => void;
   onClick: (any) => void;
   defaultValues?: any;
+  formState: any;
 }
 
 export interface IRecapProps {
@@ -28,11 +29,13 @@ interface IGalleryMap {
 }
 
 
-export const FormThree: React.FC<IProps> = ({ handleStepSubmit, handleBack, defaultValues = {} }) => {
+export const FormThree: React.FC<IProps> = ({ handleStepSubmit, handleBack, defaultValues = {}, formState }) => {
 
   const [workOrientation, setWorkOrientation] = useState<string>('portrait')
   const [availableGalleries, setAvailableGalleries] = useState<IGalleryMap[]>([])
   const [galleryId, setGalleryId] = useState<string>('');
+  const [form, setForm] = useState<any>()
+
 
   const setGalleryIdFromMap = (id: string): void => {
     setGalleryId(id)
@@ -43,6 +46,7 @@ export const FormThree: React.FC<IProps> = ({ handleStepSubmit, handleBack, defa
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm({ mode: "onBlur", defaultValues });
 
@@ -60,16 +64,35 @@ export const FormThree: React.FC<IProps> = ({ handleStepSubmit, handleBack, defa
     })(event);
   };
 
+  const setX = () => {
+    setForm(formState)
+  }
+
+  useEffect(() => {
+    setX()
+  }, [formState])
+
+  useEffect(() => {
+
+    if (!watch('startExpositionDate') || !watch('endExpositionDate')) return
+
+    getAllAvailableGalleriesForSpecificDate()
+
+  }, [watch('startExpositionDate'), watch('endExpositionDate')])
+
   const getAllAvailableGalleriesForSpecificDate = () => {
     const specificValuesToFindAvailableGalleries = {
-      "dateStart": "2022-07-09",
-      "dateEnd": "2022-07-11",
+      "dateStart": watch('startExpositionDate'),
+      "dateEnd": watch('endExpositionDate'),
       "orientation": "portrait"
     }
+
     return axiosInstance.post('/galleries/available', specificValuesToFindAvailableGalleries)
       .then(response => {
+        if (response.data.length < 1) return
+
         const correctDatas = setSpecificDateWhenDataIsAnEmptyArray(response)
-    
+
         return setAvailableGalleries(correctDatas);
       }).catch((error) => {
         return error
@@ -78,15 +101,22 @@ export const FormThree: React.FC<IProps> = ({ handleStepSubmit, handleBack, defa
 
   const setSpecificDateWhenDataIsAnEmptyArray = (response) => {
 
-    if (response.data.length < 1) {
-      const data = [{
-        id: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-        longitude: 2.3522219,
-        latitude: 48.856614,
-        zoom: 3.5
-      }]
+    if (response.data.length > 1) {
 
-      return data
+      const availableGalleries = response.data
+
+      const formattedAvailableGalleriesInformations = availableGalleries.map((galleryInfos) => {
+        return {
+          id: galleryInfos.id,
+          longitude: galleryInfos.longitude,
+          latitude: galleryInfos.latitude,
+          name: galleryInfos.latitude,
+          price: 9.99,
+          zoom: 3.5
+        }
+      })
+
+      return formattedAvailableGalleriesInformations
     }
     return response.data
   }
@@ -124,6 +154,7 @@ export const FormThree: React.FC<IProps> = ({ handleStepSubmit, handleBack, defa
           id="startExpositionDate"
           type="date"
           label="Début"
+          required
           guidance={
             errors.title
               ? {

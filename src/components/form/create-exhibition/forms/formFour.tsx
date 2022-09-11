@@ -4,6 +4,9 @@ import { Button, ExpositionBoard, Tooltip } from "@components";
 import cardImg from "../../../../assets/images/cardImg.png"
 import { useForm } from "react-hook-form";
 import { axiosInstance, getDateWithoutHours } from "@utility/index";
+import { BASE_API_URL } from "@const/index"
+import e from "express";
+import axios from "axios";
 
 const toolTipText = "Veuillez vérifier miniteusement les informations concernant votre exposition car aucune modification ne sera possible par la suite."
 
@@ -23,57 +26,66 @@ export interface IRecapProps {
 
 export const FormFour: React.FC<IProps> = ({ handleBack, handleStepSubmit, defaultValues = {}, formState }: IProps) => {
   const [orientation, setOrientation] = useState<string>('portrait')
+  const [form, setForm] = useState<any>()
 
-  const {
-    handleSubmit,
-    formState: { errors },
-  } = useForm({ mode: "onBlur", defaultValues });
+  // const {
+  //   handleSubmit,
+  //   formState: { errors },
+  // } = useForm({ mode: "onBlur", defaultValues });
 
-  const onSubmit = (event: any) => {
-    event.preventDefault();
+  // const onSubmit = (event: any) => {
+  //   event.preventDefault();
 
-    handleSubmit(() => {
-      createExhibition(formState);
-    })(event);
-  };
+  //   handleSubmit(() => {
+  //     createExhibition(formState);
+  //   })(event);
+  // };
 
   const setWorkOrientationFromForm = () => {
+    
     setOrientation(formState.orientation)
+  }
+
+  const setX = () => {
+    setForm(formState)
   }
 
   useEffect(() => {
     setWorkOrientationFromForm()
-  })
+    setX()
+  }, [formState])
 
-  const createExhibition = (formState) => {
-    
-    const expectedBodyForExhibition = {
-      "title": formState.expositionTitle,
-      "description": formState.description,
-      "dateStart": formState.startExpositionDate,
-      "dateEnd": formState.endExpositionDate,
-      "comment": formState.isVisitorsAutorise,
-      "work": '/api/works/' + formState.selectedWorkId,
-      "snapshot": [
-        {
-          "name": "facebook",
-          "url": formState.facebook
-        },
-        {
-          "name": "tipeee",
-          "url": formState.personnalWebsite
-        }
-      ],
-      "orientation": formState.workOrientation,
-      "gallery": formState.galleryId
-    }
+  const createExhibition = (event) => {
+    event.preventDefault()
 
-    return axiosInstance.post('/exhibitions', expectedBodyForExhibition)
-      .then(response => {
-        return response.data
-      }).catch((error) => {
-        return error
-      })
+      const expectedBodyForExhibition = {
+        "title": form.title,
+        "description": form.description,
+        "dateStart": form.startExpositionDate,
+        "dateEnd": form.endExpositionDate,
+        "comment": form.isVisitorsCommentsAuthorized,
+        "work": '/api/works/' + form.selectedWorkId,
+        "snapshot": [
+          {
+            "name": "facebook",
+            "url": form.facebook
+          },
+          {
+            "name": "tipeee",
+            "url": form.personnalWebsite
+          }
+        ],
+        "orientation": form.workOrientation,
+        "gallery": '1ed31e80-76d6-6194-bf74-0f2e9dc8d72b'
+      }
+
+      return axiosInstance.post(`https://walk-of-dev.herokuapp.com/api/exhibitions`, expectedBodyForExhibition)
+        .then(response => {
+  
+          return response.data
+        }).catch((error) => {
+          return error
+        })
   }
 
   return (
@@ -82,7 +94,7 @@ export const FormFour: React.FC<IProps> = ({ handleBack, handleStepSubmit, defau
         <Tooltip text={toolTipText} icon="info" type="info" />
       </div>
 
-      <form className={styles.formContainer} onSubmit={onSubmit}>
+      <form className={styles.formContainer} >
         <div className={orientation === 'portrait' ? styles.portrait : ''}>
           <ExpositionBoard src={cardImg} alt={""} orientation={orientation} />
         </div>
@@ -92,13 +104,13 @@ export const FormFour: React.FC<IProps> = ({ handleBack, handleStepSubmit, defau
           <ul className={styles.list}>
             <li>
               <strong className={styles.bold}>
-                Votre profil facebook : 
+                Votre profil facebook :
               </strong>
               {formState.facebookUrl}
             </li>
             <li>
               <strong className={styles.bold}>
-                Votre site personnel : 
+                Votre site personnel :
               </strong>
               {formState.personnalWebsiteUrl}
             </li>
@@ -119,7 +131,8 @@ export const FormFour: React.FC<IProps> = ({ handleBack, handleStepSubmit, defau
 
           <div className={styles.ctaContainer}>
             <Button label={"Étape précédente"} color="black" bg="light" type="submit" onClick={handleBack} />
-            <Button label={"Passer au paiement"} color="white" bg="dark" type="submit" />
+            <button onClick={createExhibition}>cc</button>
+            {/* <Button label={"Passer au paiement"} color="white" bg="dark" type="submit" /> */}
           </div>
         </div>
 
