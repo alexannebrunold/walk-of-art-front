@@ -135,7 +135,7 @@ const requestRefresh: TokenRefreshRequest = async (
   // Important! Do NOT use the axios instance that you supplied to applyAuthTokenInterceptor (in our case 'axiosInstance')
   // because this will result in an infinite loop when trying to refresh the token.
   // Use the global axios client or a different instance
-  const response = await axios.post(`${BASE_API_URL}/token_refresh`, {
+  const response = await axios.post(`${BASE_API_URL}token_refresh`, {
     token: refreshToken,
   })
 
