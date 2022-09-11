@@ -4,13 +4,35 @@ import { useForm } from "react-hook-form"
 import s from "./index.module.scss"
 import cn from "classnames"
 import { Icons } from "@interfaces/index";
-import { IReaction } from "../../src/types";
+import { IReaction, Smiley } from "../../src/types";
 import { Logo, Text, ImagesPreview, Button, Icon, ImagePreviewModal } from "@components"
 import { useSetRecoilState } from "recoil"
 import { activeModalState, IMAGE_PREVIEW_MODAL_ID } from "@recoil/modal/atom"
+import { axiosInstance, generateVisitorId } from './../../src/utility'
+import axios from "axios"
+import { BASE_API_URL } from "@const/index"
+
+const fetchedData = {
+    "id": "0c20524a-af25-44a7-b546-dc4cbd1b5211",
+    "title": "fxxfrxf",
+    "dateStart": "2022-07-15T00:00:00+00:00",
+    "dateEnd": "2022-07-15T00:00:00+00:00",
+    "createdAt": "2022-07-15T10:53:42+00:00",
+    "work": {
+        "workFiles": [
+            "/api/work_files/0cca24b8-93ca-4c53-9864-e870789ebdce",
+            "/api/work_files/4173976e-8325-411c-9c0c-4bb13770d10b",
+            "/api/work_files/c396420d-ae62-4ad2-a3e8-621f77fcd722"
+        ]
+    },
+    "board": "/api/boards/3c9b3f59-e87e-4a23-9f4d-86609cde54a1",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In aliquet dictumst sed aliquet nulla sed. Arcu at sagittis a placerat. Aenean cum ut dolor platea diam. Aliquam mi ac dictum tempor eget dictum tristique imperdiet. Tristique consectetur vitae mi amet, adipiscing quis vitae ac. Nunc sit eu elementum cursus. Sagittis lectus eu turpis et adipiscing tempor quis id egestas. Ac mi nibh at interdum id turpis. Interdum sapien purus quis id varius molestie tristique sed.",
+    "name": "Fabien Deneau",
+}
 
 const data = {
     name: 'Fabien Deneau',
+    mainImage: 'https://iili.io/FhDd9R.jpg',
     images: [
         '../src/assets/images/landing-1.png',
         '../src/assets/images/landing-2.png',
@@ -49,6 +71,18 @@ const Artist: React.FC = () => {
     const [displayReactions, setDisplayReactions] = useState<boolean>(false)
     const [currentIcon, setCurrentIcon] = useState<Icons>('smiley-smile')
     const [reacted, setReacted] = useState<boolean>(false)
+    const [visitorId, setVisitorId] = useState<string | null>(null)
+    const [formattedData, setFormattedData] = useState<any>([])
+
+    useEffect(() => {
+        // IDENTIFICATION
+        const currentVisitorId = localStorage.getItem('visitorId')
+        // setVisitorId(currentVisitorId ? currentVisitorId : generateVisitorId())
+        setVisitorId('36146a25-6c71-476b-b37e-b9b8fa9094b1')
+
+        // GET DATA
+        setFormattedData(fetchedData)
+    }, [])
 
     const onSubmit = (e: any) => {
         e.preventDefault()
@@ -71,6 +105,29 @@ const Artist: React.FC = () => {
         setCurrentIcon(reaction.name)
         if(!reacted) setReacted(true)
         // SEND REQUEST
+        // postReaction(reaction.name)
+    }
+
+    const postReaction = (type: Smiley) =>
+    {
+        const DTO = {
+            "visitorId": visitorId,
+            "reaction": type
+        }
+        console.log(DTO)
+        axios.post(
+            `${BASE_API_URL}/reactions/${id}`,
+            { body: DTO },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${DTO.visitorId}`,
+                }
+            }
+        )
+            .then((res) => res.data)
+            .catch((error) => console.log(error))
+
     }
 
     return (
@@ -79,17 +136,17 @@ const Artist: React.FC = () => {
                 <div className={s.artist__container}>
                     <Logo to="/" color="white"/>
                     <ImagesPreview
-                        primaryImage="https://iili.io/FhDd9R.jpg"
+                        primaryImage={data.mainImage}
                         secondaryImages={data.images}
                         onClick={handlePreviewClick}
                     />
                     <div className={s.title}>
-                        <Text tag="h2" typo="heading-md">Voila le titre de l'exposition que je visite</Text>
+                        <Text tag="h2" typo="heading-md">{formattedData.title}</Text>
                     </div>
                     <div className={s.description}>
-                        <Text tag="p" typo="paragraph-sm">Lorem ipsum dolor sit amet, consectetur adipiscing elit. In aliquet dictumst sed aliquet nulla sed. Arcu at sagittis a placerat. Aenean cum ut dolor platea diam. Aliquam mi ac dictum tempor eget dictum tristique imperdiet. Tristique consectetur vitae mi amet, adipiscing quis vitae ac. Nunc sit eu elementum cursus. Sagittis lectus eu turpis et adipiscing tempor quis id egestas. Ac mi nibh at interdum id turpis. Interdum sapien purus quis id varius molestie tristique sed.</Text>
+                        <Text tag="p" typo="paragraph-sm">{formattedData.description}</Text>
                         <div className={s.description__name}>
-                            <Text tag="p" typo="paragraph-md">{data.name}</Text>
+                            <Text tag="p" typo="paragraph-md">{formattedData.name}</Text>
                         </div>
                     </div>
                     <div className={s.reactions}>
@@ -141,7 +198,7 @@ const Artist: React.FC = () => {
                     <Text tag="h3" typo="heading-xs">
                         Réseaux sociaux de
                         <br />
-                        {data.name}
+                        {formattedData.name}
                     </Text>
                     <ul className={s.rs_list}>
                         <li className={s.rs_list__rs}>
@@ -164,7 +221,7 @@ const Artist: React.FC = () => {
                         </li>
                     </ul>
                     <Text tag="h3" typo="heading-xs">
-                        Liens de {data.name}
+                        Liens de {formattedData.name}
                     </Text>
                     <Button
                         label={"Site personnel"}
@@ -191,7 +248,7 @@ const Artist: React.FC = () => {
             </section>
             <ImagePreviewModal
                 title="Voice le titre de cette oeuvre"
-                images={data.images}
+                images={[data.mainImage, ...data.images]}
             />
         </>
     )
